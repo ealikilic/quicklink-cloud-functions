@@ -9,5 +9,5 @@ You need every critical CSS and JS File of landing page , category page(PLP) and
 Why? Because you need to specify a list of urls which should be prefetched with the quicklink.js
 (Of course you can use the elements) This is only for static urls.
 
-Example of quicklink.js + cloud function: follows
-Live example of production environment: follows
+Example of quicklink.js + cloud function: follows,
+Live example of production environment: www.lights.ie
