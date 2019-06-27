@@ -1,9 +1,10 @@
 def fetch_resources(request):
+    #@author: eyuep.alikilic - artefact Germany
+    #@info: LW-Preload-List-Fetcher 21.06.2019
     from flask import escape
     import requests
     import re
     import json
-    #Domain should be passed in Args
     request_json = request.get_json(silent=True)
     request_args = request.args
     if request_json and 'domain' in request_json:
@@ -12,21 +13,14 @@ def fetch_resources(request):
         mainURL = request_args['domain']
     else:
         return json.dumps("No domain found")
-        
-        
-    #Fetching home page to find a category url
     r = requests.get(mainURL)
     fullsource = r.text
-    #Fetching category url with a site specific regex. You should make adjustments here
     caturl = re.findall('id="nav-level0-copy"><ul[^>]*>.*?href="(.*?)"',fullsource) 
     r = requests.get(caturl[0])
     cat_fullsource = r.text
-    #Fetching product url with a site specific regex. You should make adjustments here
     produrl = re.findall('class=\"products-grid\">.*?<a href=\"(.*?)\"',cat_fullsource) 
     r = requests.get(produrl[0])
     prod_fullsource = r.text
-    
-    #Fetching url list with a file specific regex. You should make adjustments here
     ruleCSS ='href=\"('+mainURL+'\/media\/css_secure\/.*?css.*?)\"'
     ruleJS = 'src=\"('+mainURL+'\/media\/js\/.*?.js.*?)\"'
     catCSS = re.findall(ruleCSS,cat_fullsource) 
@@ -39,5 +33,17 @@ def fetch_resources(request):
     prodRes.extend(prodCSS)
     res = catRes
     res.extend(prodRes)
-    res = list(set(res)) #removing duplicate resources
-    return json.dumps(res)
+    res = list(set(res))
+    base= re.findall('https:\/\/www.*..\.(.*)',mainURL)
+    upload_blob("quicklink-resource-lists",json.dumps(res),"ql-res-list-"+base[0]+".json")
+
+def upload_blob(bucket_name, source_file_name, destination_blob_name):
+    """Uploads a file to the bucket."""
+    from google.cloud import storage
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket(bucket_name)
+    blob = bucket.blob(destination_blob_name)
+    blob.upload_from_string(source_file_name,content_type='application/json')
+    print('File {} uploaded to {}.'.format(
+        source_file_name,
+        destination_blob_name))
