@@ -31,8 +31,13 @@ def fetch_resources(request):
     prodJS = re.findall(ruleJS,prod_fullsource) 
     prodRes=prodJS
     prodRes.extend(prodCSS)
+    homeCSS = re.findall(ruleCSS,fullsource)
+    homeJS = re.findall(ruleJS,fullsource)
+    homeRes = homeJS
+    homeRes.extend(homeCSS)
     res = catRes
     res.extend(prodRes)
+    res.extend(homeRes)
     res = list(set(res))
     base= re.findall('https:\/\/www.*..\.(.*)',mainURL)
     upload_blob("quicklink-resource-lists",json.dumps(res),"ql-res-list-"+base[0]+".json")
